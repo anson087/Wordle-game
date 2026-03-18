@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【上級】和食ワードル 🥢 語彙フラッシュカード</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+        }
+        body {
+            background-color: #121212;  /* ダーク背景 */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+        .game-container {
+            max-width: 720px;
+            width: 100%;
+            background: #1e1e1e;
+            border-radius: 2rem;
+            padding: 2rem 1.5rem;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7), 0 0 0 1px #3e3e3e inset;
+        }
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1.2rem;
+            color: #f0e6d0;
+            border-bottom: 2px dashed #5f4b3a;
+            padding-bottom: 0.5rem;
+        }
+        .word-counter {
+            font-size: 1.2rem;
+            font-weight: 500;
+            background: #2d2d2d;
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            letter-spacing: 0.05em;
+            border: 1px solid #5c5248;
+            box-shadow: inset 0 2px 3px #0a0a0a;
+        }
+        .remaining-badge {
+            background: #3a2e25;
+            color: #ffd9a3;
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 500;
+            border: 1px solid #7e6b58;
+        }
+        .blank-area {
+            background: #2a2622;
+            border-radius: 28px;
+            padding: 2.2rem 1.5rem;
+            margin: 1rem 0 1.8rem 0;
+            text-align: center;
+            border: 3px solid #4e4238;
+            box-shadow: inset 0 5px 8px #0b0b0b, 0 6px 0 #2f2b27;
+        }
+        .word-length-hint {
+            font-size: 2.4rem;
+            font-weight: 700;
+            letter-spacing: 0.6rem;
+            color: #ffe1b3;
+            text-shadow: 0 4px 0 #7f5e3f;
+            background: #352e27;
+            display: inline-block;
+            padding: 0.5rem 2rem;
+            border-radius: 60px;
+            border: 1px solid #b9a287;
+            margin-bottom: 1.2rem;
+        }
+        .random-syllabary-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.7rem 1.2rem;
+            background: #332e29;
+            border-radius: 48px;
+            padding: 1.5rem 1.2rem;
+            margin-top: 1rem;
+            border: 2px solid #a3927c;
+        }
+        .syllabary-chip {
+            background: #4d443b;
+            color: #fadfbf;
+            font-size: 2.2rem;
+            font-weight: 500;
+            min-width: 3.4rem;
+            height: 3.4rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 30px;
+            padding: 0 0.8rem;
+            box-shadow: 0 4px 0 #2f2923, 0 6px 8px black;
+            border-bottom: 2px solid #b29d80;
+            text-shadow: 0 2px 2px #1f1b17;
+            transition: 0.1s ease;
+        }
+        /* 回答グリッド (5チャンス) */
+        .guesses-section {
+            margin: 2rem 0 1.8rem;
+        }
+        .guess-row {
+            display: flex;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-bottom: 0.8rem;
+        }
+        .guess-cell {
+            width: 4rem;
+            height: 4rem;
+            background: #2b2b2b;
+            border: 2px solid #7b6e5d;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.9rem;
+            font-weight: 600;
+            color: #efe8d0;
+            box-shadow: inset 0 -3px 0 #3f3a33, 0 3px 0 #26221e;
+            text-transform: uppercase;
+        }
+        .guess-cell.filled {
+            background: #3b352e;
+            border-color: #d3b185;
+            color: #fff3d1;
+            box-shadow: 0 0 0 2px #ab8e64 inset, 0 3px 0 #342e27;
+        }
+        .input-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+            margin: 1rem 0 1.2rem;
+        }
+        .answer-input-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.6rem;
+        }
+        #answerInput {
+            background: #28231e;
+            border: 3px solid #6e5d4b;
+            border-radius: 50px;
+            padding: 0.8rem 1.8rem;
+            font-size: 2rem;
+            width: 220px;
+            text-align: center;
+            color: #f7e3c5;
+            font-weight: 600;
+            letter-spacing: 0.3rem;
+            outline: none;
+            box-shadow: inset 0 4px 6px #0f0f0f;
+        }
+        #answerInput::placeholder {
+            color: #5f5345;
+            font-size: 1.2rem;
+            letter-spacing: 0.1rem;
+            font-weight: 300;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .primary-btn {
+            background: #57473a;
+            border: none;
+            border-radius: 40px;
+            padding: 0.8rem 2.2rem;
+            color: #ffefd1;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border-bottom: 5px solid #2c241e;
+            border-right: 2px solid #71604e;
+            cursor: pointer;
+            transition: 0.1s linear;
+            box-shadow: 0 6px 0 #28231d, 0 8px 12px black;
+            letter-spacing: 0.1rem;
+        }
+        .primary-btn:active {
+            transform: translateY(4px);
+            border-bottom-width: 2px;
+            box-shadow: 0 2px 0 #28231d, 0 5px 10px black;
+        }
+        .primary-btn:disabled {
+            opacity: 0.3;
+            transform: translateY(2px);
+            border-bottom-width: 3px;
+            pointer-events: none;
+            filter: grayscale(0.6);
+        }
+        .next-card-btn {
+            background: #3f563b;
+            border-bottom-color: #1e2f1c;
+            border-right-color: #627755;
+            font-size: 1.8rem;
+            padding: 1rem 2.8rem;
+            margin-top: 0.8rem;
+            width: fit-content;
+            box-shadow: 0 7px 0 #283a24, 0 10px 16px black;
+        }
+        .status-message {
+            color: #e0cdb1;
+            background: #2e2a25;
+            border-radius: 36px;
+            padding: 0.6rem 1.6rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border-left: 6px solid #bb9b73;
+            margin: 0.2rem 0 0.8rem;
+        }
+        .finish-note {
+            color: #b8a78d;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        hr {
+            border: 1px solid #534b41;
+            margin: 1rem 0;
+        }
+        .footer-controls {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="gameContainer">
+    <!-- 上部: 空白マスと語数・残りカード数 -->
+    <div class="top-header">
+        <span class="word-counter" id="blankIndicator">_____ (5文字)</span>
+        <span class="remaining-badge" id="remainingCounter">残り 15</span>
+    </div>
+
+    <!-- ブランクエリア ＋ ランダムなかな -->
+    <div class="blank-area">
+        <div class="word-length-hint" id="blankSpaces">🐟 🥚 🍣 ?</div>
+        <div class="random-syllabary-row" id="syllabaryContainer">
+            <!-- 動的にかなチップが挿入される -->
+        </div>
+    </div>
+
+    <!-- 5回のチャンス (回答グリッド) -->
+    <div class="guesses-section" id="guessesGrid">
+        <!-- JavaScript で5行生成 -->
+    </div>
+
+    <!-- 入力＆操作パネル -->
+    <div class="input-panel">
+        <div class="answer-input-area">
+            <input type="text" id="answerInput" placeholder="こたえ" maxlength="10" autocomplete="off">
+        </div>
+        <div class="action-buttons">
+            <button class="primary-btn" id="submitGuessBtn">✔ 回答する</button>
+            <button class="primary-btn" id="resetCurrentBtn">🔄 リセット</button>
+        </div>
+        <div class="status-message" id="statusMsg">🍣 単語を入力してください (ひらがな)</div>
+    </div>
+
+    <!-- 次のカード (ランダム・重複なし) ＋ ダーク背景維持 -->
+    <div class="footer-controls">
+        <button class="primary-btn next-card-btn" id="nextCardBtn">▶  next card  ◀</button>
+    </div>
+    <hr>
+    <div class="finish-note" id="completionNote">B2 レベル和食語彙 — 五回以内に正解を当てよう</div>
+</div>
+
+<script>
+(function() {
+    // ---------- B2レベル 日本の食べ物リスト (ひらがな表記, 重複なし) ----------
+    const FOOD_WORDS = [
+        "さしみ",       // 3文字
+        "てんぷら",     // 4文字
+        "すきやき",     // 4文字
+        "おこのみやき", // 6文字
+        "たこやき",     // 4文字
+        "うどん",       // 3文字
+        "そば",         // 2文字
+        "にぎり",       // 3文字
+        "しゃぶしゃぶ", // 5文字
+        "みそしる",     // 4文字
+        "おにぎり",     // 4文字
+        "さんま",       // 3文字
+        "ふぐ",         // 2文字
+        "たい",         // 2文字
+        "まぐろ",       // 3文字
+        "えびてん",     // 4文字
+        "ちゃわんむし", // 6文字
+        "なっとう",     // 4文字
+        "かき",         // 2文字
+        "ほたて",       // 3文字
+        "あわび",       // 3文字
+        "くろぶた",     // 4文字
+        "ゆば",         // 2文字
+        "こんにゃく",   // 4文字
+        "ずわいがに",   // 5文字
+        "ほっきがい",   // 5文字
+        "あなご",       // 3文字
+        "うに",         // 2文字
+        "いくら",       // 3文字
+    ];
+
+    // ゲーム状態
+    let availableWords = [];            // 未出単語リスト
+    let currentWord = '';              // 現在の正解 (ひらがな)
+    let currentWordLength = 0;
+    let guesses = [];                  // これまで試行した回答 (最大5)
+    let maxGuesses = 5;
+    let gameFinished = false;           // 正解済み or 失敗で入力停止
+    let randomKanaChars = [];           // 表示するランダムかな (10個程度)
+
+    // DOM要素
+    const blankIndicator = document.getElementById('blankIndicator');
+    const blankSpaces = document.getElementById('blankSpaces');
+    const syllabaryContainer = document.getElementById('syllabaryContainer');
+    const guessesGrid = document.getElementById('guessesGrid');
+    const remainingCounter = document.getElementById('remainingCounter');
+    const answerInput = document.getElementById('answerInput');
+    const submitBtn = document.getElementById('submitGuessBtn');
+    const resetCurrentBtn = document.getElementById('resetCurrentBtn');
+    const nextCardBtn = document.getElementById('nextCardBtn');
+    const statusMsg = document.getElementById('statusMsg');
+    const completionNote = document.getElementById('completionNote');
+
+    // ---------- ユーティリティ ----------
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // ランダムなひらがなをn個生成 (正解の文字を含んでもOK, バラエティ重視)
+    function generateRandomKana(excludeSet = new Set(), count = 12) {
+        const baseKana = [
+            'あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ',
+            'た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ',
+            'ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を','ん',
+            'が','ぎ','ぐ','げ','ご','ざ','じ','ず','ぜ','ぞ','だ','ぢ','づ','で','ど',
+            'ば','び','ぶ','べ','ぼ','ぱ','ぴ','ぷ','ぺ','ぽ','ゃ','ゅ','ょ','っ'
+        ];
+        // 正解の文字を少し混ぜても面白い → あえてベースから完全ランダムで (表示華やかに)
+        const shuffled = shuffleArray([...baseKana]);
+        const selected = [];
+        for (let i = 0; i < count; i++) {
+            selected.push(shuffled[i % shuffled.length]);
+        }
+        return shuffleArray(selected); // さらに混ぜる
+    }
+
+    // グリッド表示更新 (5行)
+    function renderGuesses() {
+        let html = '';
+        for (let i = 0; i < maxGuesses; i++) {
+            let rowHtml = '<div class="guess-row">';
+            const guess = guesses[i] || '';
+            const wordChars = guess.split('');
+            for (let j = 0; j < currentWordLength; j++) {
+                const char = wordChars[j] || '';
+                const filledClass = char ? 'filled' : '';
+                rowHtml += `<div class="guess-cell ${filledClass}">${char}</div>`;
+            }
+            rowHtml += '</div>';
+            html += rowHtml;
+        }
+        guessesGrid.innerHTML = html;
+    }
+
+    // 現在のカード情報で上部表示を更新
+    function refreshTopDisplay() {
+        // ブランク表示 (文字数分のアンダースコア風)
+        let blankStr = '';
+        for (let i = 0; i < currentWordLength; i++) blankStr += '⚫︎';
+        blankSpaces.textContent = blankStr + '  ( ' + currentWordLength + '文字 )';
+        blankIndicator.textContent = `_____ (${currentWordLength}文字)`;
+
+        // 残りカード数
+        remainingCounter.textContent = `残り ${availableWords.length}`;
+
+        // ランダムかな表示 (10〜12個)
+        randomKanaChars = generateRandomKana(new Set(), 12);
+        let syllHtml = '';
+        randomKanaChars.forEach(k => {
+            syllHtml += `<span class="syllabary-chip">${k}</span>`;
+        });
+        syllabaryContainer.innerHTML = syllHtml;
+
+        // 回答グリッド再描画
+        renderGuesses();
+
+        // 入力フィールドリセット
+        answerInput.value = '';
+        answerInput.disabled = gameFinished;
+        submitBtn.disabled = gameFinished;
+
+        // ステータスメッセージ
+        if (gameFinished) {
+            if (guesses.includes(currentWord)) {
+                statusMsg.textContent = `🎉 正解！ 「${currentWord}」 です。次のカードへ`;
+            } else if (guesses.length >= maxGuesses) {
+                statusMsg.textContent = `😵 残念… 正解は 「${currentWord}」 でした。`;
+            } else {
+                statusMsg.textContent = `✨ 新しいカード 「????」`;
+            }
+        } else {
+            statusMsg.textContent = `🥢 あと ${maxGuesses - guesses.length} 回チャンス (ひらがなで)`;
+        }
+
+        // もし全カード終了していたら表示
+        if (availableWords.length === 0 && currentWord === '') {
+            blankSpaces.textContent = '🎊 コンプリート！';
+            blankIndicator.textContent = '_____ (終了)';
+            remainingCounter.textContent = '残り 0';
+            syllabaryContainer.innerHTML = '<span class="syllabary-chip">🍜</span><span class="syllabary-chip">🍣</span><span class="syllabary-chip">🍙</span>';
+            statusMsg.textContent = 'おめでとうございます！すべての和食をマスター';
+            answerInput.disabled = true;
+            submitBtn.disabled = true;
+            nextCardBtn.disabled = true; // 次がない
+        } else {
+            nextCardBtn.disabled = false;
+        }
+    }
+
+    // 新しい単語をセット (ランダム選択、重複なし)
+    function setNewWord() {
+        if (availableWords.length === 0) {
+            currentWord = '';
+            currentWordLength = 0;
+            guesses = [];
+            gameFinished = true;
+            refreshTopDisplay();
+            return;
+        }
+
+        // ランダムに単語を選択 (すでにシャッフル済みの可能性もあるが安全に)
+        const randomIndex = Math.floor(Math.random() * availableWords.length);
+        currentWord = availableWords[randomIndex];
+        // その単語をavailableから削除 (重複防止)
+        availableWords.splice(randomIndex, 1);
+
+        currentWordLength = currentWord.length;
+        guesses = [];
+        gameFinished = false;
+        refreshTopDisplay();
+    }
+
+    // 回答を処理
+    function handleSubmitGuess() {
+        if (gameFinished) {
+            statusMsg.textContent = 'このカードは終了しました。次のカードへ';
+            return;
+        }
+        if (guesses.length >= maxGuesses) {
+            statusMsg.textContent = `❌ チャンス終了。正解は「${currentWord}」です。`;
+            gameFinished = true;
+            answerInput.disabled = true;
+            submitBtn.disabled = true;
+            refreshTopDisplay();  // グリッドそのまま表示更新
+            return;
+        }
+
+        const input = answerInput.value.trim().toLowerCase();
+        if (input === '') {
+            statusMsg.textContent = '🍙 ひらがなで入力してください';
+            return;
+        }
+        // 簡易ひらがなチェック（カタカナ・漢字は拒否したいが、基本入力まかせ、ただし長さ比較）
+        if (input.length !== currentWordLength) {
+            statusMsg.textContent = `⚠️ 文字数が違います (${currentWordLength}文字必要)`;
+            return;
+        }
+
+        // 推測を記録
+        guesses.push(input);
+        renderGuesses();
+
+        // 正解判定
+        if (input === currentWord) {
+            statusMsg.textContent = `🎌 大正解！ 「${currentWord}」 です！ 次のカードへ`;
+            gameFinished = true;
+            answerInput.disabled = true;
+            submitBtn.disabled = true;
+        } else if (guesses.length >= maxGuesses) {
+            gameFinished = true;
+            answerInput.disabled = true;
+            submitBtn.disabled = true;
+            statusMsg.textContent = `😞 残念… 正解は 「${currentWord}」 でした。`;
+        } else {
+            statusMsg.textContent = `🔁 違います。あと ${maxGuesses - guesses.length} 回`;
+        }
+
+        // 入力欄クリア
+        answerInput.value = '';
+        // ゲーム終了時も表示更新
+        refreshTopDisplay(); // これでstatusなど再描画されるが、メッセージ上書き注意。だがstatusを再セット
+        // せっかくなのでstatusはこの関数でセットしたものを維持したいがrefreshTopDisplayで変わる。
+        // 対処：refreshTopDisplay内でgameFinishedに応じた文言を出すが、ここで上書きしよう。
+        // 簡易的: refreshTopDisplayを呼ばずに必要な部分だけ更新する方法もあるが、一貫性のため再度ステータス設定。
+        // 再描 gihulagway refreshTopDisplayを呼び、その後さらにstatusMsgを適切に設定。
+    }
+
+    // リセット(同じカードで最初から)
+    function resetCurrentCard() {
+        if (!currentWord) return;
+        guesses = [];
+        gameFinished = false;
+        answerInput.disabled = false;
+        submitBtn.disabled = false;
+        refreshTopDisplay();
+        statusMsg.textContent = `🔄 リセットしました。 残り ${maxGuesses} 回`;
+    }
+
+    // 初期化：全単語を利用可能にし、最初のカードをセット
+    function initGame() {
+        // 単語リストをシャッフルしてavailableWordsに (重複なく使うため)
+        availableWords = shuffleArray([...FOOD_WORDS]);
+        setNewWord();
+    }
+
+    // イベントリスナー
+    submitBtn.addEventListener('click', function() {
+        handleSubmitGuess();
+    });
+
+    resetCurrentBtn.addEventListener('click', function() {
+        if (currentWord) resetCurrentCard();
+    });
+
+    nextCardBtn.addEventListener('click', function() {
+        if (availableWords.length === 0 && currentWord === '') {
+            // 完全終了時は何もしない
+            return;
+        }
+        // もし現在のカードが残っていて、まだ未出単語がある場合はcurrentWordを戻す必要はない（重複回避済み）
+        // ただし、次のカードへ行くとき、もし現在のカードが未解決でもそのまま破棄でOK
+        setNewWord();
+    });
+
+    // エンターキーで回答送信
+    answerInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSubmitGuess();
+        }
+    });
+
+    // スタート
+    initGame();
+})();
+</script>
+</body>
+</html>
